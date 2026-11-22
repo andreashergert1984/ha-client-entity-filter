@@ -1,0 +1,14 @@
+{
+  "domain": "client_entity_filter",
+  "name": "Client Entity Filter",
+  "codeowners": ["@andreashergert1984"],
+  "config_flow": true,
+  "dependencies": ["websocket_api"],
+  "documentation": "https://github.com/andreashergert1984/ha-client-entity-filter",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/andreashergert1984/ha-client-entity-filter/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.1.0"
+}

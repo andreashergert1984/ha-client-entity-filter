@@ -1,0 +1,79 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Client Entity Filter",
+        "description": "Choose which entities are held back from dashboards and apps. The entities keep working for automations, history and everything else on the server; filtered clients just don't receive their states. A filtered client shows such an entity as not found.",
+        "data": {
+          "users": "Filtered users",
+          "clients": "Filtered clients",
+          "exclude_labels": "Labels to hold back",
+          "exclude_entities": "Entities to hold back",
+          "exclude_domains": "Domains to hold back",
+          "exclude_globs": "Entity ID patterns to hold back",
+          "exclude_hidden": "Hold back hidden entities",
+          "exclude_categories": "Entity categories to hold back",
+          "keep_entities": "Entities to keep anyway"
+        },
+        "data_description": {
+          "users": "Only connections of these users are filtered. Leave empty to filter every user.",
+          "clients": "Use the mobile apps option to keep the browser on your computer unfiltered while the same user is filtered on the phone.",
+          "exclude_labels": "Entities with one of these labels, and all entities of devices with one of these labels.",
+          "exclude_entities": "Single entities.",
+          "exclude_domains": "All entities of these domains, for example `update`.",
+          "exclude_globs": "Patterns with * as a wildcard, for example `sensor.battery*_cell_*`.",
+          "exclude_hidden": "Entities that are hidden in their settings.",
+          "exclude_categories": "Entities an integration marked as diagnostic or configuration.",
+          "keep_entities": "These entities are always sent, even if a rule above matches them."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Already configured. Only a single configuration is possible."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Client Entity Filter",
+        "description": "With the saved settings, {excluded} of {total} entities are held back from filtered clients. Changes apply the next time a client connects, for example after reloading the page or restarting the app.",
+        "data": {
+          "users": "Filtered users",
+          "clients": "Filtered clients",
+          "exclude_labels": "Labels to hold back",
+          "exclude_entities": "Entities to hold back",
+          "exclude_domains": "Domains to hold back",
+          "exclude_globs": "Entity ID patterns to hold back",
+          "exclude_hidden": "Hold back hidden entities",
+          "exclude_categories": "Entity categories to hold back",
+          "keep_entities": "Entities to keep anyway"
+        },
+        "data_description": {
+          "users": "Only connections of these users are filtered. Leave empty to filter every user.",
+          "clients": "Use the mobile apps option to keep the browser on your computer unfiltered while the same user is filtered on the phone.",
+          "exclude_labels": "Entities with one of these labels, and all entities of devices with one of these labels.",
+          "exclude_entities": "Single entities.",
+          "exclude_domains": "All entities of these domains, for example `update`.",
+          "exclude_globs": "Patterns with * as a wildcard, for example `sensor.battery*_cell_*`.",
+          "exclude_hidden": "Entities that are hidden in their settings.",
+          "exclude_categories": "Entities an integration marked as diagnostic or configuration.",
+          "keep_entities": "These entities are always sent, even if a rule above matches them."
+        }
+      }
+    }
+  },
+  "selector": {
+    "clients": {
+      "options": {
+        "all": "All clients (browsers, apps, wall panels)",
+        "apps": "Only the Home Assistant mobile apps"
+      }
+    },
+    "exclude_categories": {
+      "options": {
+        "diagnostic": "Diagnostic entities",
+        "config": "Configuration entities"
+      }
+    }
+  }
+}

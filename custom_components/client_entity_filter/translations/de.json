@@ -1,0 +1,79 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Client Entity Filter",
+        "description": "Lege fest, welche Entitäten Dashboards und Apps nicht erhalten. Die Entitäten arbeiten für Automationen, Verlauf und alles andere auf dem Server unverändert weiter; gefilterte Clients bekommen nur ihre Zustände nicht. Ein gefilterter Client zeigt eine solche Entität als nicht gefunden an.",
+        "data": {
+          "users": "Gefilterte Benutzer",
+          "clients": "Gefilterte Clients",
+          "exclude_labels": "Zurückgehaltene Labels",
+          "exclude_entities": "Zurückgehaltene Entitäten",
+          "exclude_domains": "Zurückgehaltene Domains",
+          "exclude_globs": "Zurückgehaltene Muster für Entitäts-IDs",
+          "exclude_hidden": "Versteckte Entitäten zurückhalten",
+          "exclude_categories": "Zurückgehaltene Entitätskategorien",
+          "keep_entities": "Trotzdem senden"
+        },
+        "data_description": {
+          "users": "Nur Verbindungen dieser Benutzer werden gefiltert. Leer lassen, um alle Benutzer zu filtern.",
+          "clients": "Mit der Option für die mobilen Apps bleibt der Browser am Rechner ungefiltert, während derselbe Benutzer am Handy gefiltert wird.",
+          "exclude_labels": "Entitäten mit einem dieser Labels sowie alle Entitäten von Geräten mit einem dieser Labels.",
+          "exclude_entities": "Einzelne Entitäten.",
+          "exclude_domains": "Alle Entitäten dieser Domains, zum Beispiel `update`.",
+          "exclude_globs": "Muster mit * als Platzhalter, zum Beispiel `sensor.battery*_cell_*`.",
+          "exclude_hidden": "Entitäten, die in ihren Einstellungen versteckt sind.",
+          "exclude_categories": "Entitäten, die eine Integration als Diagnose oder Konfiguration markiert hat.",
+          "keep_entities": "Diese Entitäten werden immer gesendet, auch wenn eine Regel darüber auf sie zutrifft."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Bereits eingerichtet. Es ist nur eine Konfiguration möglich."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Client Entity Filter",
+        "description": "Mit den gespeicherten Einstellungen werden {excluded} von {total} Entitäten vor gefilterten Clients zurückgehalten. Änderungen gelten ab der nächsten Verbindung eines Clients, zum Beispiel nach dem Neuladen der Seite oder dem Neustart der App.",
+        "data": {
+          "users": "Gefilterte Benutzer",
+          "clients": "Gefilterte Clients",
+          "exclude_labels": "Zurückgehaltene Labels",
+          "exclude_entities": "Zurückgehaltene Entitäten",
+          "exclude_domains": "Zurückgehaltene Domains",
+          "exclude_globs": "Zurückgehaltene Muster für Entitäts-IDs",
+          "exclude_hidden": "Versteckte Entitäten zurückhalten",
+          "exclude_categories": "Zurückgehaltene Entitätskategorien",
+          "keep_entities": "Trotzdem senden"
+        },
+        "data_description": {
+          "users": "Nur Verbindungen dieser Benutzer werden gefiltert. Leer lassen, um alle Benutzer zu filtern.",
+          "clients": "Mit der Option für die mobilen Apps bleibt der Browser am Rechner ungefiltert, während derselbe Benutzer am Handy gefiltert wird.",
+          "exclude_labels": "Entitäten mit einem dieser Labels sowie alle Entitäten von Geräten mit einem dieser Labels.",
+          "exclude_entities": "Einzelne Entitäten.",
+          "exclude_domains": "Alle Entitäten dieser Domains, zum Beispiel `update`.",
+          "exclude_globs": "Muster mit * als Platzhalter, zum Beispiel `sensor.battery*_cell_*`.",
+          "exclude_hidden": "Entitäten, die in ihren Einstellungen versteckt sind.",
+          "exclude_categories": "Entitäten, die eine Integration als Diagnose oder Konfiguration markiert hat.",
+          "keep_entities": "Diese Entitäten werden immer gesendet, auch wenn eine Regel darüber auf sie zutrifft."
+        }
+      }
+    }
+  },
+  "selector": {
+    "clients": {
+      "options": {
+        "all": "Alle Clients (Browser, Apps, Wandtablets)",
+        "apps": "Nur die mobilen Home-Assistant-Apps"
+      }
+    },
+    "exclude_categories": {
+      "options": {
+        "diagnostic": "Diagnose-Entitäten",
+        "config": "Konfigurations-Entitäten"
+      }
+    }
+  }
+}
