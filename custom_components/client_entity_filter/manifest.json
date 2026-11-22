@@ -1,9 +1,17 @@
 {
   "domain": "client_entity_filter",
   "name": "Client Entity Filter",
-  "codeowners": ["@andreashergert1984"],
+  "after_dependencies": [
+    "energy",
+    "lovelace"
+  ],
+  "codeowners": [
+    "@andreashergert1984"
+  ],
   "config_flow": true,
-  "dependencies": ["websocket_api"],
+  "dependencies": [
+    "websocket_api"
+  ],
   "documentation": "https://github.com/andreashergert1984/ha-client-entity-filter",
   "integration_type": "service",
   "iot_class": "calculated",
