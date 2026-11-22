@@ -10,17 +10,24 @@ the command of Home Assistant itself.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import timedelta
 import logging
 from typing import Any
 
 from homeassistant.components import websocket_api
 from homeassistant.components.websocket_api import ActiveConnection
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
+from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryError
+from homeassistant.helpers.event import async_track_time_interval
 
-from .const import COMMAND
+from .const import COMMAND, CONF_MODE, MODE_DASHBOARDS, REFRESH_MINUTES
+from .dashboards import DashboardIndex
 from .filter import applies_to_client, build_filter
+
+# Fired by Home Assistant when a dashboard is saved.
+EVENT_LOVELACE_UPDATED = "lovelace_updated"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,6 +38,7 @@ class RuntimeData:
 
     original: tuple[Any, Any]
     wrapper: Any
+    index: DashboardIndex
 
 
 type ClientEntityFilterConfigEntry = ConfigEntry[RuntimeData]
@@ -59,6 +67,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ClientEntityFilterConfig
             f"This Home Assistant version has no entity filter on {COMMAND}"
         ) from err
 
+    index = DashboardIndex(hass)
+
+    async def refresh_index(_: Any = None) -> None:
+        """Read the dashboards again, if the filter is built from them."""
+        if entry.options.get(CONF_MODE) != MODE_DASHBOARDS:
+            return
+        try:
+            await index.async_refresh()
+        except Exception:
+            _LOGGER.exception("Could not read the dashboards")
+
     failed_before = False
 
     @callback
@@ -75,8 +94,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ClientEntityFilterConfig
             if not _client_filters_itself(msg) and applies_to_client(
                 hass, entry.options, connection.user.id, connection.refresh_token_id
             ):
-                client_filter = build_filter(hass, entry.options)
-                if not client_filter.empty:
+                client_filter = build_filter(hass, entry.options, index)
+                if client_filter is not None and not client_filter.empty:
                     msg = {**msg, **client_filter.as_message_filter()}
         except Exception:
             # Never keep a client from its states: without a filter the
@@ -87,7 +106,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: ClientEntityFilterConfig
         original_handler(hass, connection, msg)
 
     websocket_api.async_register_command(hass, COMMAND, handle_subscribe_entities, schema)
-    entry.runtime_data = RuntimeData(original, handle_subscribe_entities)
+    entry.runtime_data = RuntimeData(original, handle_subscribe_entities, index)
+
+    # Dashboards are read at setup, once Home Assistant has started (they may
+    # load after this integration), whenever one is saved, whenever the
+    # options change, and from time to time for everything else.
+    await refresh_index()
+
+    @callback
+    def schedule_refresh(_: Event | None = None) -> None:
+        hass.async_create_task(refresh_index(), eager_start=False)
+
+    async def options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
+        await refresh_index()
+
+    entry.async_on_unload(hass.bus.async_listen(EVENT_LOVELACE_UPDATED, schedule_refresh))
+    entry.async_on_unload(hass.bus.async_listen(EVENT_HOMEASSISTANT_STARTED, schedule_refresh))
+    entry.async_on_unload(
+        async_track_time_interval(hass, refresh_index, timedelta(minutes=REFRESH_MINUTES))
+    )
+    entry.async_on_unload(entry.add_update_listener(options_updated))
     return True
 
 

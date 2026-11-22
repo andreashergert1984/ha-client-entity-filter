@@ -23,13 +23,19 @@ async def test_user_flow(hass: HomeAssistant, states: dict[str, str]) -> None:
 
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
-        {"clients": "apps", "exclude_hidden": True, "exclude_domains": ["update", "my_domain"]},
+        {
+            "clients": "apps",
+            "mode": "dashboards",
+            "exclude_hidden": True,
+            "exclude_domains": ["update", "my_domain"],
+        },
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["data"] == {}
     assert result["options"] == {
         **DEFAULT_OPTIONS,
         "clients": "apps",
+        "mode": "dashboards",
         "exclude_hidden": True,
         "exclude_domains": ["update", "my_domain"],
     }
@@ -55,8 +61,31 @@ async def test_options_flow(
     # Clearing a field leaves it out of the input; it must not keep its old value.
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
-        {"clients": "all", "exclude_hidden": False, "exclude_domains": ["update"]},
+        {"clients": "all", "mode": "rules", "exclude_hidden": False, "exclude_domains": ["update"]},
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert entry.options == {**DEFAULT_OPTIONS, "exclude_domains": ["update"]}
     assert await subscribe(await hass_ws_client(hass)) == set(STATES) - {"update.core"}
+
+
+async def test_options_flow_counts_in_dashboards_mode(
+    hass: HomeAssistant, hass_ws_client: WebSocketGenerator, setup_filter: Setup
+) -> None:
+    """The form counts what the dashboards mode holds back."""
+    from homeassistant.setup import async_setup_component  # noqa: PLC0415
+
+    assert await async_setup_component(hass, "lovelace", {})
+    client = await hass_ws_client(hass)
+    await client.send_json_auto_id(
+        {
+            "type": "lovelace/config/save",
+            "config": {"views": [{"cards": [{"entity": "light.kitchen"}]}]},
+        }
+    )
+    assert (await client.receive_json())["success"]
+    entry = await setup_filter(mode="dashboards", keep_domains=["update"])
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    assert result["description_placeholders"] == {
+        "excluded": str(len(STATES) - 2),
+        "total": str(len(STATES)),
+    }

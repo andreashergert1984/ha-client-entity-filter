@@ -7,24 +7,30 @@
         "data": {
           "users": "Gefilterte Benutzer",
           "clients": "Gefilterte Clients",
+          "mode": "Was gesendet wird",
+          "keep_domains": "Behaltene Domains (Dashboard-Modus)",
+          "keep_globs": "Behaltene Muster für Entitäts-IDs (Dashboard-Modus)",
+          "keep_entities": "Trotzdem senden",
           "exclude_labels": "Zurückgehaltene Labels",
           "exclude_entities": "Zurückgehaltene Entitäten",
           "exclude_domains": "Zurückgehaltene Domains",
           "exclude_globs": "Zurückgehaltene Muster für Entitäts-IDs",
           "exclude_hidden": "Versteckte Entitäten zurückhalten",
-          "exclude_categories": "Zurückgehaltene Entitätskategorien",
-          "keep_entities": "Trotzdem senden"
+          "exclude_categories": "Zurückgehaltene Entitätskategorien"
         },
         "data_description": {
           "users": "Nur Verbindungen dieser Benutzer werden gefiltert. Leer lassen, um alle Benutzer zu filtern.",
           "clients": "Mit der Option für die mobilen Apps bleibt der Browser am Rechner ungefiltert, während derselbe Benutzer am Handy gefiltert wird.",
+          "mode": "Regeln: Alles wird gesendet, außer was die Regeln unten zurückhalten. Dashboards: Gesendet wird nur, was deine Dashboards und das Energie-Dashboard verwenden, dazu alles, was du unten behältst; die Regeln halten dann auch Entitäten zurück, die auf einem Dashboard stehen.",
+          "keep_domains": "Werden immer vollständig gesendet, zum Beispiel `person` oder `binary_sensor`. Nötig für Karten, die ihre Entitäten selbst auswählen, etwa auto-entities.",
+          "keep_globs": "Werden immer gesendet, zum Beispiel `sensor.evcc_*`.",
+          "keep_entities": "Werden in beiden Modi immer gesendet, auch wenn eine Regel unten auf sie zutrifft.",
           "exclude_labels": "Entitäten mit einem dieser Labels sowie alle Entitäten von Geräten mit einem dieser Labels.",
           "exclude_entities": "Einzelne Entitäten.",
           "exclude_domains": "Alle Entitäten dieser Domains, zum Beispiel `update`.",
           "exclude_globs": "Muster mit * als Platzhalter, zum Beispiel `sensor.battery*_cell_*`.",
           "exclude_hidden": "Entitäten, die in ihren Einstellungen versteckt sind.",
-          "exclude_categories": "Entitäten, die eine Integration als Diagnose oder Konfiguration markiert hat.",
-          "keep_entities": "Diese Entitäten werden immer gesendet, auch wenn eine Regel darüber auf sie zutrifft."
+          "exclude_categories": "Entitäten, die eine Integration als Diagnose oder Konfiguration markiert hat."
         }
       }
     },
@@ -40,24 +46,30 @@
         "data": {
           "users": "Gefilterte Benutzer",
           "clients": "Gefilterte Clients",
+          "mode": "Was gesendet wird",
+          "keep_domains": "Behaltene Domains (Dashboard-Modus)",
+          "keep_globs": "Behaltene Muster für Entitäts-IDs (Dashboard-Modus)",
+          "keep_entities": "Trotzdem senden",
           "exclude_labels": "Zurückgehaltene Labels",
           "exclude_entities": "Zurückgehaltene Entitäten",
           "exclude_domains": "Zurückgehaltene Domains",
           "exclude_globs": "Zurückgehaltene Muster für Entitäts-IDs",
           "exclude_hidden": "Versteckte Entitäten zurückhalten",
-          "exclude_categories": "Zurückgehaltene Entitätskategorien",
-          "keep_entities": "Trotzdem senden"
+          "exclude_categories": "Zurückgehaltene Entitätskategorien"
         },
         "data_description": {
           "users": "Nur Verbindungen dieser Benutzer werden gefiltert. Leer lassen, um alle Benutzer zu filtern.",
           "clients": "Mit der Option für die mobilen Apps bleibt der Browser am Rechner ungefiltert, während derselbe Benutzer am Handy gefiltert wird.",
+          "mode": "Regeln: Alles wird gesendet, außer was die Regeln unten zurückhalten. Dashboards: Gesendet wird nur, was deine Dashboards und das Energie-Dashboard verwenden, dazu alles, was du unten behältst; die Regeln halten dann auch Entitäten zurück, die auf einem Dashboard stehen.",
+          "keep_domains": "Werden immer vollständig gesendet, zum Beispiel `person` oder `binary_sensor`. Nötig für Karten, die ihre Entitäten selbst auswählen, etwa auto-entities.",
+          "keep_globs": "Werden immer gesendet, zum Beispiel `sensor.evcc_*`.",
+          "keep_entities": "Werden in beiden Modi immer gesendet, auch wenn eine Regel unten auf sie zutrifft.",
           "exclude_labels": "Entitäten mit einem dieser Labels sowie alle Entitäten von Geräten mit einem dieser Labels.",
           "exclude_entities": "Einzelne Entitäten.",
           "exclude_domains": "Alle Entitäten dieser Domains, zum Beispiel `update`.",
           "exclude_globs": "Muster mit * als Platzhalter, zum Beispiel `sensor.battery*_cell_*`.",
           "exclude_hidden": "Entitäten, die in ihren Einstellungen versteckt sind.",
-          "exclude_categories": "Entitäten, die eine Integration als Diagnose oder Konfiguration markiert hat.",
-          "keep_entities": "Diese Entitäten werden immer gesendet, auch wenn eine Regel darüber auf sie zutrifft."
+          "exclude_categories": "Entitäten, die eine Integration als Diagnose oder Konfiguration markiert hat."
         }
       }
     }
@@ -73,6 +85,12 @@
       "options": {
         "diagnostic": "Diagnose-Entitäten",
         "config": "Konfigurations-Entitäten"
+      }
+    },
+    "mode": {
+      "options": {
+        "rules": "Alles außer dem, was die Regeln zurückhalten",
+        "dashboards": "Nur was die Dashboards verwenden"
       }
     }
   }

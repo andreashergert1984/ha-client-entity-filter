@@ -58,6 +58,8 @@ after reloading the page or restarting the app.
 | Setting | Meaning |
 | --- | --- |
 | Filtered users | Only connections of these users are filtered. Empty: every user. |
+| What to send | "Everything except what the rules hold back" (default) or "Only what the dashboards use", see below. |
+| Domains / patterns to keep | Only for the dashboards mode: always sent in full. |
 | Filtered clients | All clients, or only the Home Assistant mobile apps. With the second choice the browser on your computer stays unfiltered while the same user is filtered on the phone. |
 | Labels to hold back | Entities with one of these labels, and all entities of devices with one of these labels. Create a label like "Under the hood" and assign it wherever you like. |
 | Entities to hold back | Single entities. |
@@ -69,6 +71,39 @@ after reloading the page or restarting the app.
 
 The "Configure" dialog shows how many of your entities the saved settings hold
 back.
+
+### Only what the dashboards use
+
+In this mode a filtered client receives only the entities your dashboards
+mention, and nothing else. That is the biggest saving, and it needs no list of
+things to hold back: a new device with fifty diagnostic sensors is held back
+until you put one of them on a dashboard.
+
+The integration reads all dashboards (storage and YAML) and the energy
+dashboard preferences and looks for everything that looks like an entity ID,
+anywhere in the configuration, also inside templates and in the options of
+custom cards. For cards that show an area, the lights, switches, covers,
+climate devices, binary sensors and the like of that area are kept, and of its
+sensors the device classes the card asks for (temperature and humidity by
+default). Dashboards are read again whenever one is saved and every 15 minutes.
+
+What it cannot know:
+
+- Cards that choose their entities themselves in the browser, such as
+  auto-entities with a domain or attribute filter, or cards that find their
+  entities by name. Add the domains or patterns they need to "Domains to keep"
+  or "Entity ID patterns to keep".
+- Dashboards that build themselves in the frontend (the built-in Overview, and
+  any dashboard with a strategy). They are reported in the log once.
+- Pages outside of dashboards. The to-do, calendar and map pages, the entity
+  pickers in the automation editor and the developer tools only see what is
+  sent. Keep `todo`, `calendar`, `person` and `zone` if you use those pages on
+  a filtered client, and leave one client unfiltered for administration.
+
+The rules to hold back still apply in this mode and also take away entities
+that are on a dashboard. "Entities to keep anyway" always wins.
+
+If no dashboard can be read at all, nothing is held back.
 
 Domains and patterns also cover entities that are created later. Labels, hidden
 entities and categories are looked up when a client connects, so a newly

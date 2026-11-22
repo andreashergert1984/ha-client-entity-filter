@@ -20,34 +20,68 @@ from .const import (
     CONF_EXCLUDE_GLOBS,
     CONF_EXCLUDE_HIDDEN,
     CONF_EXCLUDE_LABELS,
+    CONF_KEEP_DOMAINS,
     CONF_KEEP_ENTITIES,
+    CONF_KEEP_GLOBS,
+    CONF_MODE,
     CONF_USERS,
+    MODE_DASHBOARDS,
 )
+from .dashboards import DashboardIndex
+
+
+def _matches(entity_id: str, globs: tuple[str, ...]) -> bool:
+    return any(fnmatch.fnmatchcase(entity_id, glob) for glob in globs)
+
+
+def _globs(values: Any) -> tuple[str, ...]:
+    return tuple(glob.strip() for glob in values or [] if glob.strip())
 
 
 @dataclass(frozen=True, slots=True)
 class ClientFilter:
-    """What a filtered client does not get."""
+    """What a filtered client gets and does not get.
+
+    With ``only`` unset, a client gets everything but what the rules hold back.
+    With ``only`` set, it gets these entities (less what the rules hold back)
+    plus the domains and patterns to keep, and nothing else.
+    """
 
     domains: frozenset[str]
     globs: tuple[str, ...]
     entities: frozenset[str]
     keep: frozenset[str]
+    only: frozenset[str] | None = None
+    keep_domains: frozenset[str] = frozenset()
+    keep_globs: tuple[str, ...] = ()
 
     @property
     def empty(self) -> bool:
-        """Return if nothing is excluded."""
-        return not (self.domains or self.globs or self.entities)
+        """Return if the filter would not limit anything it can be sure about."""
+        if self.only is None:
+            return not (self.domains or self.globs or self.entities)
+        # Without a single known entity the dashboards could not be read;
+        # sending nothing at all would be worse than not filtering.
+        return not (self.only or self.keep or self.keep_domains or self.keep_globs)
+
+    def _held_back_by_rule(self, entity_id: str) -> bool:
+        return (
+            entity_id in self.entities
+            or split_entity_id(entity_id)[0] in self.domains
+            or _matches(entity_id, self.globs)
+        )
 
     def excludes(self, entity_id: str) -> bool:
         """Return if the entity is held back from a filtered client."""
         if entity_id in self.keep:
             return False
-        if entity_id in self.entities:
-            return True
-        if split_entity_id(entity_id)[0] in self.domains:
-            return True
-        return any(fnmatch.fnmatchcase(entity_id, glob) for glob in self.globs)
+        if self.only is None:
+            return self._held_back_by_rule(entity_id)
+        if split_entity_id(entity_id)[0] in self.keep_domains or _matches(
+            entity_id, self.keep_globs
+        ):
+            return False
+        return entity_id not in self.only or self._held_back_by_rule(entity_id)
 
     def as_message_filter(self) -> dict[str, dict[str, list[str]]]:
         """Return the include and exclude fields for subscribe_entities.
@@ -56,10 +90,26 @@ class ClientFilter:
         when that filter names domains or globs. With an exclude filter of
         entities alone, an include list would turn into "only these", so the
         entities to keep are simply left out of the exclude list instead.
+
+        With ``only`` set, the same "only these" behavior is what is wanted:
+        an include filter without any exclude filter.
         """
+        nothing: dict[str, list[str]] = {"domains": [], "entity_globs": [], "entities": []}
+        if self.only is not None:
+            entities = {
+                entity_id for entity_id in self.only if not self._held_back_by_rule(entity_id)
+            }
+            return {
+                "include": {
+                    "domains": sorted(self.keep_domains),
+                    "entity_globs": list(self.keep_globs),
+                    "entities": sorted(entities | self.keep),
+                },
+                "exclude": nothing,
+            }
         keep = sorted(self.keep) if (self.domains or self.globs) else []
         return {
-            "include": {"domains": [], "entity_globs": [], "entities": keep},
+            "include": {**nothing, "entities": keep},
             "exclude": {
                 "domains": sorted(self.domains),
                 "entity_globs": list(self.globs),
@@ -89,13 +139,17 @@ def applies_to_client(
 
 
 @callback
-def build_filter(hass: HomeAssistant, options: Mapping[str, Any]) -> ClientFilter:
+def build_filter(
+    hass: HomeAssistant, options: Mapping[str, Any], index: DashboardIndex | None = None
+) -> ClientFilter | None:
     """Resolve the options into a filter.
 
     Labels, hidden entities and entity categories are resolved against the
     registries now, so they cover the entities known at this moment. Domains
     and globs are matched by Home Assistant for every state change and also
     cover entities that appear later.
+
+    Returns None while the dashboards are needed but have not been read yet.
     """
     entities: set[str] = set(options.get(CONF_EXCLUDE_ENTITIES) or [])
     labels = options.get(CONF_EXCLUDE_LABELS) or []
@@ -124,9 +178,20 @@ def build_filter(hass: HomeAssistant, options: Mapping[str, Any]) -> ClientFilte
                 ):
                     entities.add(entry.entity_id)
 
+    only: frozenset[str] | None = None
+    if options.get(CONF_MODE) == MODE_DASHBOARDS:
+        if index is None or not index.ready:
+            return None
+        only = index.entity_ids()
+
     return ClientFilter(
         domains=frozenset(options.get(CONF_EXCLUDE_DOMAINS) or []),
-        globs=tuple(glob.strip() for glob in options.get(CONF_EXCLUDE_GLOBS) or [] if glob.strip()),
+        globs=_globs(options.get(CONF_EXCLUDE_GLOBS)),
         entities=frozenset(entities),
         keep=frozenset(options.get(CONF_KEEP_ENTITIES) or []),
+        only=only,
+        keep_domains=frozenset(options.get(CONF_KEEP_DOMAINS) or [])
+        if only is not None
+        else frozenset(),
+        keep_globs=_globs(options.get(CONF_KEEP_GLOBS)) if only is not None else (),
     )

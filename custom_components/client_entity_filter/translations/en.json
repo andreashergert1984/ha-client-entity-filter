@@ -7,24 +7,30 @@
         "data": {
           "users": "Filtered users",
           "clients": "Filtered clients",
+          "mode": "What to send",
+          "keep_domains": "Domains to keep (dashboards mode)",
+          "keep_globs": "Entity ID patterns to keep (dashboards mode)",
+          "keep_entities": "Entities to keep anyway",
           "exclude_labels": "Labels to hold back",
           "exclude_entities": "Entities to hold back",
           "exclude_domains": "Domains to hold back",
           "exclude_globs": "Entity ID patterns to hold back",
           "exclude_hidden": "Hold back hidden entities",
-          "exclude_categories": "Entity categories to hold back",
-          "keep_entities": "Entities to keep anyway"
+          "exclude_categories": "Entity categories to hold back"
         },
         "data_description": {
           "users": "Only connections of these users are filtered. Leave empty to filter every user.",
           "clients": "Use the mobile apps option to keep the browser on your computer unfiltered while the same user is filtered on the phone.",
+          "mode": "Rules: everything is sent except what the rules below hold back. Dashboards: only the entities your dashboards and the energy dashboard use are sent, plus what you keep below; the rules then also hold back entities that are on a dashboard.",
+          "keep_domains": "Always sent in full, for example `person` or `binary_sensor`. Needed for cards that pick their entities themselves, such as auto-entities.",
+          "keep_globs": "Always sent, for example `sensor.evcc_*`.",
+          "keep_entities": "Always sent, in both modes, even if a rule below matches them.",
           "exclude_labels": "Entities with one of these labels, and all entities of devices with one of these labels.",
           "exclude_entities": "Single entities.",
           "exclude_domains": "All entities of these domains, for example `update`.",
           "exclude_globs": "Patterns with * as a wildcard, for example `sensor.battery*_cell_*`.",
           "exclude_hidden": "Entities that are hidden in their settings.",
-          "exclude_categories": "Entities an integration marked as diagnostic or configuration.",
-          "keep_entities": "These entities are always sent, even if a rule above matches them."
+          "exclude_categories": "Entities an integration marked as diagnostic or configuration."
         }
       }
     },
@@ -40,24 +46,30 @@
         "data": {
           "users": "Filtered users",
           "clients": "Filtered clients",
+          "mode": "What to send",
+          "keep_domains": "Domains to keep (dashboards mode)",
+          "keep_globs": "Entity ID patterns to keep (dashboards mode)",
+          "keep_entities": "Entities to keep anyway",
           "exclude_labels": "Labels to hold back",
           "exclude_entities": "Entities to hold back",
           "exclude_domains": "Domains to hold back",
           "exclude_globs": "Entity ID patterns to hold back",
           "exclude_hidden": "Hold back hidden entities",
-          "exclude_categories": "Entity categories to hold back",
-          "keep_entities": "Entities to keep anyway"
+          "exclude_categories": "Entity categories to hold back"
         },
         "data_description": {
           "users": "Only connections of these users are filtered. Leave empty to filter every user.",
           "clients": "Use the mobile apps option to keep the browser on your computer unfiltered while the same user is filtered on the phone.",
+          "mode": "Rules: everything is sent except what the rules below hold back. Dashboards: only the entities your dashboards and the energy dashboard use are sent, plus what you keep below; the rules then also hold back entities that are on a dashboard.",
+          "keep_domains": "Always sent in full, for example `person` or `binary_sensor`. Needed for cards that pick their entities themselves, such as auto-entities.",
+          "keep_globs": "Always sent, for example `sensor.evcc_*`.",
+          "keep_entities": "Always sent, in both modes, even if a rule below matches them.",
           "exclude_labels": "Entities with one of these labels, and all entities of devices with one of these labels.",
           "exclude_entities": "Single entities.",
           "exclude_domains": "All entities of these domains, for example `update`.",
           "exclude_globs": "Patterns with * as a wildcard, for example `sensor.battery*_cell_*`.",
           "exclude_hidden": "Entities that are hidden in their settings.",
-          "exclude_categories": "Entities an integration marked as diagnostic or configuration.",
-          "keep_entities": "These entities are always sent, even if a rule above matches them."
+          "exclude_categories": "Entities an integration marked as diagnostic or configuration."
         }
       }
     }
@@ -73,6 +85,12 @@
       "options": {
         "diagnostic": "Diagnostic entities",
         "config": "Configuration entities"
+      }
+    },
+    "mode": {
+      "options": {
+        "rules": "Everything except what the rules hold back",
+        "dashboards": "Only what the dashboards use"
       }
     }
   }

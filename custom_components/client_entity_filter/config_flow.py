@@ -28,11 +28,17 @@ from .const import (
     CONF_EXCLUDE_GLOBS,
     CONF_EXCLUDE_HIDDEN,
     CONF_EXCLUDE_LABELS,
+    CONF_KEEP_DOMAINS,
     CONF_KEEP_ENTITIES,
+    CONF_KEEP_GLOBS,
+    CONF_MODE,
     CONF_USERS,
     DEFAULT_OPTIONS,
     DOMAIN,
+    MODE_DASHBOARDS,
+    MODE_RULES,
 )
+from .dashboards import DashboardIndex
 from .filter import build_filter
 
 TITLE = "Client Entity Filter"
@@ -46,8 +52,20 @@ async def _async_schema(hass: HomeAssistant, options: dict[str, Any]) -> vol.Sch
         if not user.system_generated and user.is_active
     ]
     domains = sorted(
-        {state.domain for state in hass.states.async_all()} | set(options[CONF_EXCLUDE_DOMAINS])
+        {state.domain for state in hass.states.async_all()}
+        | set(options[CONF_EXCLUDE_DOMAINS])
+        | set(options[CONF_KEEP_DOMAINS])
     )
+
+    def domain_selector() -> selector.SelectSelector:
+        return selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=domains,
+                multiple=True,
+                custom_value=True,
+                mode=selector.SelectSelectorMode.DROPDOWN,
+            )
+        )
 
     def field(key: str) -> vol.Optional:
         return vol.Optional(key, description={"suggested_value": options[key]})
@@ -70,20 +88,27 @@ async def _async_schema(hass: HomeAssistant, options: dict[str, Any]) -> vol.Sch
                     )
                 )
             ),
+            vol.Required(CONF_MODE, default=options[CONF_MODE]): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=[MODE_RULES, MODE_DASHBOARDS],
+                    translation_key=CONF_MODE,
+                    mode=selector.SelectSelectorMode.LIST,
+                )
+            ),
+            field(CONF_KEEP_DOMAINS): domain_selector(),
+            field(CONF_KEEP_GLOBS): selector.TextSelector(
+                selector.TextSelectorConfig(multiple=True)
+            ),
+            field(CONF_KEEP_ENTITIES): selector.EntitySelector(
+                selector.EntitySelectorConfig(multiple=True)
+            ),
             field(CONF_EXCLUDE_LABELS): selector.LabelSelector(
                 selector.LabelSelectorConfig(multiple=True)
             ),
             field(CONF_EXCLUDE_ENTITIES): selector.EntitySelector(
                 selector.EntitySelectorConfig(multiple=True)
             ),
-            field(CONF_EXCLUDE_DOMAINS): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=domains,
-                    multiple=True,
-                    custom_value=True,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                )
-            ),
+            field(CONF_EXCLUDE_DOMAINS): domain_selector(),
             field(CONF_EXCLUDE_GLOBS): selector.TextSelector(
                 selector.TextSelectorConfig(multiple=True)
             ),
@@ -98,9 +123,6 @@ async def _async_schema(hass: HomeAssistant, options: dict[str, Any]) -> vol.Sch
                     mode=selector.SelectSelectorMode.LIST,
                 )
             ),
-            field(CONF_KEEP_ENTITIES): selector.EntitySelector(
-                selector.EntitySelectorConfig(multiple=True)
-            ),
         }
     )
 
@@ -110,15 +132,19 @@ def _normalize(user_input: dict[str, Any]) -> dict[str, Any]:
     return {**DEFAULT_OPTIONS, **user_input}
 
 
-@callback
-def _placeholders(hass: HomeAssistant, options: dict[str, Any]) -> dict[str, str]:
+async def _async_placeholders(hass: HomeAssistant, options: dict[str, Any]) -> dict[str, str]:
     """Count what the options hold back right now."""
-    client_filter = build_filter(hass, options)
+    index = DashboardIndex(hass)
+    if options[CONF_MODE] == MODE_DASHBOARDS:
+        await index.async_refresh()
+    client_filter = build_filter(hass, options, index)
     states = hass.states.async_all()
-    return {
-        "excluded": str(sum(1 for state in states if client_filter.excludes(state.entity_id))),
-        "total": str(len(states)),
-    }
+    held_back = (
+        0
+        if client_filter is None or client_filter.empty
+        else sum(1 for state in states if client_filter.excludes(state.entity_id))
+    )
+    return {"excluded": str(held_back), "total": str(len(states))}
 
 
 class ClientEntityFilterConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -134,7 +160,7 @@ class ClientEntityFilterConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=await _async_schema(self.hass, options),
-            description_placeholders=_placeholders(self.hass, options),
+            description_placeholders=await _async_placeholders(self.hass, options),
         )
 
     @staticmethod
@@ -155,5 +181,5 @@ class ClientEntityFilterOptionsFlow(OptionsFlow):
         return self.async_show_form(
             step_id="init",
             data_schema=await _async_schema(self.hass, options),
-            description_placeholders=_placeholders(self.hass, options),
+            description_placeholders=await _async_placeholders(self.hass, options),
         )
